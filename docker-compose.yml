@@ -78,7 +78,7 @@ services:
     volumes:
       - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
     ports:
-      - "5601:5601"
+      - "80:5601"
     environment:
       KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
       # Fleet plugin
@@ -87,6 +87,21 @@ services:
       - elk
     depends_on:
       - elasticsearch
+  apm:
+    image: elastic/apm-server:7.17.2
+
+    ports:
+      - "8200:8200"
+
+    networks:
+      - elk
+
+    command: ./apm-server -e -E output.elasticsearch.hosts=elasticsearch:9200 -E output.elasticsearch.username=elastic -E output.elasticsearch.password=changeme -E apm-server.host=0.0.0.0:8200
+
+    depends_on:
+      - elasticsearch
+      - kibana
+      - logstash
 
 networks:
   elk:
